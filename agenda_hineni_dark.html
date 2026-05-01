@@ -1,0 +1,365 @@
+
+<h2 class="sr-only">Agenda estratégica interactiva Hineni en modo oscuro con dashboard, semáforo semanal y línea de tiempo</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.dm{--bg:#0e0e11;--bg2:#16161b;--bg3:#1e1e25;--bg4:#26262f;--t1:#f0f0f4;--t2:#9898a8;--t3:#55555f;--bd:0.5px solid #2a2a35;--bds:0.5px solid #3a3a48;--acc:#e94560;--br:8px;--brl:12px;font-family:var(--font-sans,'system-ui');background:var(--bg);color:var(--t1);border-radius:var(--brl);overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:var(--bd);background:var(--bg2)}
+.logo{font-size:14px;font-weight:500;letter-spacing:.06em;color:var(--t1)}
+.logo em{color:#e94560;font-style:normal}
+.tabs{display:flex;gap:3px;padding:.5rem 1.25rem;border-bottom:var(--bd);background:var(--bg2)}
+.tab{padding:5px 13px;border-radius:var(--br);font-size:12px;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .15s;font-family:inherit}
+.tab.active{background:var(--bg4);color:var(--t1);font-weight:500;border:var(--bds)}
+.tab:hover:not(.active){color:var(--t1);background:var(--bg3)}
+.view{display:none;padding:1.125rem}
+.view.active{display:block}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.mcard{background:var(--bg3);border-radius:var(--br);padding:.875rem 1rem;border:var(--bd)}
+.mcard-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:3px}
+.mcard-val{font-size:22px;font-weight:500;line-height:1.1}
+.mcard-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.sec{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin:1rem 0 .5rem}
+.card{background:var(--bg2);border:var(--bd);border-radius:var(--brl);padding:1rem 1.25rem}
+.trow{display:grid;grid-template-columns:8px 1fr auto auto auto auto;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--br);border:var(--bd);background:var(--bg2);margin-bottom:5px;transition:border-color .15s;cursor:default}
+.trow:hover{border-color:#3a3a48;background:var(--bg3)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot.alta{background:#e24b4a}
+.dot.media{background:#ef9f27}
+.dot.baja{background:#639922}
+.tname{font-size:13px;color:var(--t1);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tnotes{font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.cat-pill{font-size:10px;padding:2px 7px;border-radius:20px;white-space:nowrap;font-weight:500}
+.cat-jalara{background:#0C447C;color:#B5D4F4}
+.cat-montesierpe{background:#3C3489;color:#CECBF6}
+.cat-hineni{background:#085041;color:#9FE1CB}
+.cat-personal{background:#633806;color:#FAC775}
+.imp-pill{font-size:10px;padding:2px 7px;border-radius:20px;white-space:nowrap;font-weight:500}
+.imp-estrategico{background:#791F1F;color:#F09595}
+.imp-operativo{background:#633806;color:#FAC775}
+.imp-formativo{background:#27500A;color:#C0DD97}
+.dl-label{font-size:11px;color:var(--t2);white-space:nowrap}
+.dl-label.overdue{color:#e24b4a}
+.dl-label.soon{color:#ef9f27}
+.ebtn{background:none;border:none;cursor:pointer;color:var(--t3);font-size:13px;padding:2px 5px;border-radius:4px}
+.ebtn:hover{color:var(--t1);background:var(--bg4)}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:7px 0 5px;border-bottom:var(--bds);margin-bottom:7px}
+.pt{font-size:13px;font-weight:500;color:var(--t1)}
+.pm{font-size:11px;color:var(--t3)}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin:.75rem 0}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;cursor:pointer;border:var(--bd);background:var(--bg3);color:var(--t2);transition:all .15s;font-family:inherit}
+.tag.af{background:var(--t1);color:var(--bg);border-color:var(--t1)}
+.tag:hover:not(.af){color:var(--t1)}
+.addbtn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--br);border:var(--bds);background:transparent;color:var(--t2);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
+.addbtn:hover{background:var(--bg3);color:var(--t1)}
+.modal-wrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200}
+.modal-wrap.open{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+.modal{position:relative;background:var(--bg2);border:var(--bds);border-radius:var(--brl);padding:1.5rem;width:min(460px,95vw);max-height:88vh;overflow-y:auto;z-index:1}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:1rem;color:var(--t1)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--t2);margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;border-radius:var(--br);border:var(--bds);background:var(--bg3);color:var(--t1);font-size:13px;font-family:inherit;outline:none}
+.field textarea{resize:vertical;min-height:56px}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+.btn{padding:6px 15px;border-radius:var(--br);cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s;border:var(--bds)}
+.btn-p{background:var(--t1);color:var(--bg);border-color:var(--t1)}
+.btn-p:hover{opacity:.85}
+.btn-g{background:transparent;color:var(--t2)}
+.btn-g:hover{background:var(--bg3);color:var(--t1)}
+.cbar-wrap{height:5px;background:var(--bg4);border-radius:3px;flex:1;overflow:hidden;min-width:60px}
+.cbar{height:100%;border-radius:3px}
+.crow{display:grid;grid-template-columns:80px 1fr 28px;align-items:center;gap:10px;padding:7px 0;border-bottom:var(--bd)}
+.crow:last-child{border-bottom:none}
+.sem-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:.75rem 0}
+.dcol{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dlabel{font-size:10px;color:var(--t3);font-weight:500}
+.dbar-wrap{display:flex;flex-direction:column;justify-content:flex-end;height:72px}
+.dbar{width:24px;border-radius:4px;min-height:3px}
+.dtasks{font-size:10px;color:var(--t2)}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin-top:.75rem}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+.tl-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:var(--bd)}
+.tl-row:last-child{border-bottom:none}
+.tl-bar{width:3px;height:32px;border-radius:2px;flex-shrink:0}
+.status-pill{font-size:10px;padding:2px 8px;border-radius:20px;white-space:nowrap;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.status-pendiente{background:#1e2a1a;color:#7ec87a;border:0.5px solid #3a5a35}
+.status-completada{background:#1a1a2e;color:#6a6aaa;border:0.5px solid #35355a}
+.trow.completada .tname{text-decoration:line-through;color:var(--t3)}
+.trow.completada .tnotes{opacity:.5}
+.trow.completada .dot{opacity:.4}
+</style>
+
+<div class="dm">
+  <div class="topbar">
+    <div class="logo">HINENI <em>·</em> Agenda Estratégica</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="addbtn" onclick="openAdd()">+ Nueva tarea</button>
+      <span style="font-size:11px;color:var(--t3)" id="today-lbl"></span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="sw('tareas',this)">Tareas</button>
+    <button class="tab" onclick="sw('dashboard',this)">Dashboard</button>
+    <button class="tab" onclick="sw('semaforo',this)">Semáforo</button>
+    <button class="tab" onclick="sw('timeline',this)">Línea de tiempo</button>
+  </div>
+
+  <div class="view active" id="vt">
+    <div class="tags" id="ftags">
+      <span class="tag af" onclick="ft('all',this)">Todas</span>
+      <span class="tag" onclick="ft('alta',this)">Alta prioridad</span>
+      <span class="tag" onclick="ft('media',this)">Media</span>
+      <span class="tag" onclick="ft('baja',this)">Baja</span>
+      <span class="tag" onclick="ft('jalara',this)">Jalara</span>
+      <span class="tag" onclick="ft('montesierpe',this)">Montesierpe</span>
+      <span class="tag" onclick="ft('hineni',this)">Hineni</span>
+      <span class="tag" onclick="ft('personal',this)">Personal</span>
+      <span style="width:0.5px;height:18px;background:var(--bg4);display:inline-block;margin:0 2px;vertical-align:middle"></span>
+      <span class="tag" onclick="ft('pendiente',this)">⏳ Pendientes</span>
+      <span class="tag" onclick="ft('completada',this)">✓ Completadas</span>
+    </div>
+    <div id="tlist"></div>
+  </div>
+
+  <div class="view" id="vd">
+    <div class="grid4" id="mcards"></div>
+    <div class="sec">Tareas por proyecto</div>
+    <div class="card" id="comp" style="margin-bottom:10px"></div>
+    <div class="sec">Distribución por impacto</div>
+    <div class="card" id="impct"></div>
+  </div>
+
+  <div class="view" id="vs">
+    <div class="sec">Semáforo de productividad — semana actual</div>
+    <div class="card" id="sem-main"></div>
+    <div class="sec" style="margin-top:1rem">Carga por categoría y día</div>
+    <div class="card" id="sem-cat"></div>
+  </div>
+
+  <div class="view" id="vtl">
+    <div class="sec">Proyección temporal</div>
+    <div class="card" id="tl-content"></div>
+  </div>
+
+  <div class="modal-wrap" id="modal">
+    <div class="modal-bg" onclick="closeM()"></div>
+    <div class="modal">
+      <h3 id="mtitle">Editar tarea</h3>
+      <div class="field"><label>Nombre</label><input id="fn" type="text"></div>
+      <div class="field"><label>Proyecto</label>
+        <select id="fp"><option value="jalara">Jalara</option><option value="montesierpe">Montesierpe</option><option value="hineni">Hineni</option><option value="personal">Personal</option></select>
+      </div>
+      <div class="field"><label>Deadline</label><input id="fd" type="date"></div>
+      <div class="field"><label>Prioridad</label>
+        <select id="fpr"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select>
+      </div>
+      <div class="field"><label>Impacto</label>
+        <select id="fi"><option value="estrategico">Estratégico</option><option value="operativo">Operativo</option><option value="formativo">Formativo</option></select>
+      </div>
+      <div class="field"><label>Estado</label>
+        <select id="fst"><option value="pendiente">⏳ Pendiente</option><option value="completada">✓ Completada</option></select>
+      </div>
+      <div class="field"><label>Notas</label><textarea id="fno" placeholder="Contexto, recursos, dependencias..."></textarea></div>
+      <div class="mact">
+        <button class="btn btn-g" onclick="closeM()">Cancelar</button>
+        <button class="btn btn-p" onclick="saveT()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const today=new Date();
+document.getElementById('today-lbl').textContent=today.toLocaleDateString('es-PE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+let editId=null,cf='all';
+
+const tasks=[
+  {id:1,name:'Propuesta de acciones para activar destino Lunahuaná desde Jalara',proj:'jalara',dl:'2026-04-30',prio:'alta',impact:'estrategico',notes:'Presentar al equipo de ventas y operaciones',status:'pendiente'},
+  {id:2,name:'Reunión con WeSpeak para migración a API-QR',proj:'jalara',dl:'2026-04-30',prio:'alta',impact:'operativo',notes:'Confirmar disponibilidad técnica',status:'pendiente'},
+  {id:3,name:'Scouting UGC: Trekking, senderismo, outdoor',proj:'jalara',dl:'continua',prio:'media',impact:'estrategico',notes:'Actividad continua',status:'pendiente'},
+  {id:4,name:'Envío de propuesta Jalara B2B a empresas',proj:'jalara',dl:'continua',prio:'alta',impact:'estrategico',notes:'Actividad continua',status:'pendiente'},
+  {id:5,name:'Producción en Jalara',proj:'jalara',dl:'2026-05-02',prio:'alta',impact:'operativo',notes:'Sesión de contenido en locación',status:'pendiente'},
+  {id:6,name:'Planificación y edición de reel "Vacaciones Escolares"',proj:'jalara',dl:'2026-04-30',prio:'alta',impact:'operativo',notes:'',status:'pendiente'},
+  {id:7,name:'Presentación resumen Marketing Digital abril 2026',proj:'jalara',dl:'2026-04-30',prio:'media',impact:'estrategico',notes:'Métricas Meta, TikTok, Google',status:'pendiente'},
+  {id:8,name:'Campaña guion N°1 — inicio 27/04/2026',proj:'montesierpe',dl:'2026-05-30',prio:'alta',impact:'estrategico',notes:'Depósito S/.150 Meta ADS + S/.25 TikTok ADS',status:'pendiente'},
+  {id:9,name:'Campaña guion N°2 — inicio 20/04/2026',proj:'montesierpe',dl:'2026-05-30',prio:'alta',impact:'estrategico',notes:'',status:'pendiente'},
+  {id:10,name:'Ajustar fee mensual del servicio integral: S/. 2,000',proj:'hineni',dl:'2026-05-05',prio:'alta',impact:'estrategico',notes:'Revisar estructura de costos y valor entregado',status:'pendiente'},
+  {id:11,name:'Revisar CV para asistente en Hineni',proj:'hineni',dl:'2026-05-10',prio:'media',impact:'operativo',notes:'',status:'pendiente'},
+  {id:12,name:'Innovación para solución tecnológica',proj:'hineni',dl:'continua',prio:'media',impact:'estrategico',notes:'Exploración y benchmarking',status:'pendiente'},
+  {id:13,name:'Libro de cuentos: "La Extrañeza del Ser"',proj:'personal',dl:'continua',prio:'baja',impact:'formativo',notes:'',status:'pendiente'},
+  {id:14,name:'Lectura: Maimónides — Guía de los Perplejos',proj:'personal',dl:'continua',prio:'baja',impact:'formativo',notes:'',status:'pendiente'}
+];
+
+function gdu(dl){if(dl==='continua')return null;return Math.ceil((new Date(dl+'T12:00:00')-today)/864e5)}
+function dlCls(dl){const d=gdu(dl);if(d===null)return'';if(d<0)return'overdue';if(d<=3)return'soon';return''}
+function dlLbl(dl){
+  if(dl==='continua')return'Actividad continua';
+  const d=gdu(dl);
+  const fmt=new Date(dl+'T12:00:00').toLocaleDateString('es-PE',{day:'numeric',month:'short'});
+  if(d<0)return`Vencida`;if(d===0)return'Hoy';if(d===1)return'Mañana';return`${fmt} (${d}d)`;
+}
+function cLbl(p){return{jalara:'Jalara',montesierpe:'Montesierpe',hineni:'Hineni',personal:'Personal'}[p]||p}
+function iLbl(i){return{estrategico:'Estratégico',operativo:'Operativo',formativo:'Formativo'}[i]||i}
+
+function rTasks(){
+  const list=document.getElementById('tlist');
+  let f=tasks.filter(t=>{
+    if(cf==='all')return true;
+    if(cf==='pendiente'||cf==='completada')return t.status===cf;
+    if(['alta','media','baja'].includes(cf))return t.prio===cf;
+    return t.proj===cf;
+  });
+  f.sort((a,b)=>({alta:0,media:1,baja:2}[a.prio]-{alta:0,media:1,baja:2}[b.prio]));
+  if(!f.length){list.innerHTML='<div style="text-align:center;padding:2rem;color:#55555f;font-size:13px">Sin tareas para este filtro.</div>';return}
+  const ps=[...new Set(f.map(t=>t.proj))];
+  let h='';
+  ps.forEach(p=>{
+    const pt=f.filter(t=>t.proj===p);
+    h+=`<div class="ph"><span class="pt">${cLbl(p)}</span><span class="pm">${pt.length} tarea${pt.length!==1?'s':''}</span></div>`;
+    pt.forEach(t=>{
+      const isDone=t.status==='completada';
+      h+=`<div class="trow${isDone?' completada':''}">
+        <div class="dot ${t.prio}"></div>
+        <div style="min-width:0">
+          <div class="tname">${t.name}</div>
+          ${t.notes?`<div class="tnotes">${t.notes}</div>`:''}
+        </div>
+        <button class="status-pill status-${t.status}" onclick="toggleStatus(${t.id})" title="Cambiar estado">${isDone?'✓ Completada':'⏳ Pendiente'}</button>
+        <span class="imp-pill imp-${t.impact}">${iLbl(t.impact)}</span>
+        <span class="dl-label ${dlCls(t.dl)}">${dlLbl(t.dl)}</span>
+        <button class="ebtn" onclick="openEdit(${t.id})">✎</button>
+      </div>`;
+    });
+  });
+  list.innerHTML=h;
+}
+
+function toggleStatus(id){
+  const t=tasks.find(x=>x.id===id);
+  if(t)t.status=t.status==='completada'?'pendiente':'completada';
+  rAll();
+}
+
+function ft(f,el){cf=f;document.querySelectorAll('#ftags .tag').forEach(t=>t.classList.remove('af'));el.classList.add('af');rTasks()}
+
+function openEdit(id){
+  editId=id;const t=tasks.find(x=>x.id===id);
+  document.getElementById('mtitle').textContent='Editar tarea';
+  document.getElementById('fn').value=t.name;
+  document.getElementById('fp').value=t.proj;
+  document.getElementById('fd').value=t.dl==='continua'?'':t.dl;
+  document.getElementById('fpr').value=t.prio;
+  document.getElementById('fi').value=t.impact;
+  document.getElementById('fst').value=t.status||'pendiente';
+  document.getElementById('fno').value=t.notes||'';
+  document.getElementById('modal').classList.add('open');
+}
+function openAdd(){
+  editId=null;
+  document.getElementById('mtitle').textContent='Nueva tarea';
+  document.getElementById('fn').value='';document.getElementById('fp').value='jalara';
+  document.getElementById('fd').value='';document.getElementById('fpr').value='media';
+  document.getElementById('fi').value='estrategico';document.getElementById('fno').value='';
+  document.getElementById('fst').value='pendiente';
+  document.getElementById('modal').classList.add('open');
+}
+function closeM(){document.getElementById('modal').classList.remove('open')}
+function saveT(){
+  const name=document.getElementById('fn').value.trim();if(!name)return;
+  const obj={name,proj:document.getElementById('fp').value,dl:document.getElementById('fd').value||'continua',prio:document.getElementById('fpr').value,impact:document.getElementById('fi').value,status:document.getElementById('fst').value,notes:document.getElementById('fno').value.trim()};
+  if(editId){const i=tasks.findIndex(x=>x.id===editId);tasks[i]={...tasks[i],...obj}}
+  else{obj.id=Date.now();tasks.push(obj)}
+  closeM();rAll();
+}
+
+function rDash(){
+  const tot=tasks.length,alt=tasks.filter(t=>t.prio==='alta').length;
+  const venc=tasks.filter(t=>{const d=gdu(t.dl);return d!==null&&d<0}).length;
+  const prox=tasks.filter(t=>{const d=gdu(t.dl);return d!==null&&d>=0&&d<=7}).length;
+  const done=tasks.filter(t=>t.status==='completada').length;
+  document.getElementById('mcards').innerHTML=`
+    <div class="mcard"><div class="mcard-label">Total tareas</div><div class="mcard-val">${tot}</div><div class="mcard-sub">Todos los proyectos</div></div>
+    <div class="mcard"><div class="mcard-label">Alta prioridad</div><div class="mcard-val" style="color:#e24b4a">${alt}</div><div class="mcard-sub">${Math.round(alt/tot*100)}% del total</div></div>
+    <div class="mcard"><div class="mcard-label">Vencidas</div><div class="mcard-val" style="color:#e24b4a">${venc}</div><div class="mcard-sub">Atención inmediata</div></div>
+    <div class="mcard"><div class="mcard-label">Próximos 7d</div><div class="mcard-val" style="color:#ef9f27">${prox}</div><div class="mcard-sub">Con deadline definido</div></div>
+    <div class="mcard"><div class="mcard-label">Completadas</div><div class="mcard-val" style="color:#6a6aaa">${done}</div><div class="mcard-sub">${Math.round(done/tot*100)}% completado</div></div>
+  `;
+  const pc={'jalara':'#378ADD','montesierpe':'#7F77DD','hineni':'#1D9E75','personal':'#EF9F27'};
+  const projs=['jalara','montesierpe','hineni','personal'];
+  const mx=Math.max(...projs.map(p=>tasks.filter(t=>t.proj===p).length));
+  let c='';
+  projs.forEach(p=>{
+    const n=tasks.filter(t=>t.proj===p).length,al=tasks.filter(t=>t.proj===p&&t.prio==='alta').length;
+    c+=`<div class="crow"><span style="font-size:12px;color:#9898a8">${cLbl(p)}</span><div style="display:flex;flex-direction:column;gap:2px"><div class="cbar-wrap"><div class="cbar" style="width:${Math.round(n/mx*100)}%;background:${pc[p]}"></div></div><div style="font-size:10px;color:#55555f">${al} alta prioridad</div></div><span style="font-size:13px;font-weight:500;color:#f0f0f4;text-align:right">${n}</span></div>`;
+  });
+  document.getElementById('comp').innerHTML=c;
+  const ic={'estrategico':'#E24B4A','operativo':'#EF9F27','formativo':'#639922'};
+  const imps=['estrategico','operativo','formativo'];
+  const mx2=Math.max(...imps.map(i=>tasks.filter(t=>t.impact===i).length));
+  let im='';
+  imps.forEach(i=>{
+    const n=tasks.filter(t=>t.impact===i).length;
+    im+=`<div class="crow"><span style="font-size:12px;color:#9898a8">${iLbl(i)}</span><div class="cbar-wrap"><div class="cbar" style="width:${Math.round(n/mx2*100)}%;background:${ic[i]}"></div></div><span style="font-size:13px;font-weight:500;color:#f0f0f4;text-align:right">${n}</span></div>`;
+  });
+  document.getElementById('impct').innerHTML=im;
+}
+
+function rSem(){
+  const days=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const dow=today.getDay();
+  const mon=new Date(today);mon.setDate(today.getDate()-(dow===0?6:dow-1));
+  const wt=tasks.filter(t=>{if(t.dl==='continua')return false;const d=new Date(t.dl+'T12:00:00');const diff=Math.ceil((d-mon)/864e5);return diff>=0&&diff<7});
+  const dc=Array(7).fill(0);
+  wt.forEach(t=>{const d=new Date(t.dl+'T12:00:00');const idx=(d.getDay()+6)%7;if(idx<7)dc[idx]++});
+  const mx=Math.max(...dc,1);
+  let s='<div class="sem-grid">';
+  const isToday=dow===0?6:dow-1;
+  days.forEach((d,i)=>{
+    const c=dc[i],h=Math.max(4,Math.round(c/mx*68));
+    const col=c===0?'#2a2a35':c<=1?'#3B6D11':c<=2?'#854F0B':'#A32D2D';
+    const tc=c===0?'#55555f':c<=1?'#639922':c<=2?'#ef9f27':'#e24b4a';
+    s+=`<div class="dcol"><div class="dlabel" style="color:${i===isToday?'#f0f0f4':'#55555f'};font-weight:${i===isToday?500:400}">${d}</div><div class="dbar-wrap"><div class="dbar" style="height:${h}px;background:${col};width:24px"></div></div><div class="dtasks" style="color:${tc}">${c}</div></div>`;
+  });
+  s+='</div><div class="leg"><div class="leg-item"><div class="leg-dot" style="background:#3B6D11"></div>Tranquilo (1)</div><div class="leg-item"><div class="leg-dot" style="background:#854F0B"></div>Moderado (2)</div><div class="leg-item"><div class="leg-dot" style="background:#A32D2D"></div>Denso (3+)</div><div class="leg-item"><div class="leg-dot" style="background:#2a2a35"></div>Sin deadlines</div></div>';
+  document.getElementById('sem-main').innerHTML=s;
+  const pc2={'jalara':'#378ADD','montesierpe':'#7F77DD','hineni':'#1D9E75','personal':'#EF9F27'};
+  const projs=['jalara','montesierpe','hineni','personal'];
+  let cs='<div style="display:flex;flex-direction:column;gap:9px">';
+  projs.forEach(p=>{
+    const pt=tasks.filter(t=>t.proj===p&&t.dl!=='continua');
+    const pd=Array(7).fill(0);
+    pt.forEach(t=>{const d=new Date(t.dl+'T12:00:00');const diff=Math.ceil((d-mon)/864e5);if(diff>=0&&diff<7)pd[(d.getDay()+6)%7]++});
+    cs+=`<div style="display:flex;align-items:center;gap:8px"><span style="min-width:84px;font-size:12px;color:#9898a8">${cLbl(p)}</span><div style="display:flex;gap:4px">${pd.map((c,i)=>`<div style="width:22px;height:22px;border-radius:4px;background:${c>0?pc2[p]:'#1e1e25'};display:flex;align-items:center;justify-content:center;font-size:10px;color:${c>0?'#fff':'#55555f'}">${c>0?c:''}</div>`).join('')}</div></div>`;
+  });
+  cs+='</div>';
+  document.getElementById('sem-cat').innerHTML=cs;
+}
+
+function rTl(){
+  const dated=tasks.filter(t=>t.dl!=='continua').sort((a,b)=>new Date(a.dl)-new Date(b.dl));
+  const cont=tasks.filter(t=>t.dl==='continua');
+  const pc={'jalara':'#378ADD','montesierpe':'#7F77DD','hineni':'#1D9E75','personal':'#EF9F27'};
+  let h='<div style="display:flex;flex-direction:column;gap:0">';
+  let lm='';
+  dated.forEach(t=>{
+    const d=new Date(t.dl+'T12:00:00');
+    const m=d.toLocaleDateString('es-PE',{month:'long',year:'numeric'});
+    if(m!==lm){h+=`<div style="font-size:10px;font-weight:500;color:#55555f;padding:11px 0 5px;text-transform:uppercase;letter-spacing:.07em;border-top:${lm?'0.5px solid #2a2a35':'none'};margin-top:${lm?'6px':'0'}">${m}</div>`;lm=m}
+    const days=gdu(t.dl);
+    const uc=days<0?'#e24b4a':days<=3?'#ef9f27':pc[t.proj];
+    h+=`<div class="tl-row"><div class="tl-bar" style="background:${uc}"></div><div style="flex:1;min-width:0"><div style="font-size:13px;color:#f0f0f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div><div style="font-size:11px;color:#55555f;margin-top:1px">${cLbl(t.proj)} · ${iLbl(t.impact)}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:500;color:${uc}">${dlLbl(t.dl)}</div><div class="dot ${t.prio}" style="margin:3px auto 0"></div></div></div>`;
+  });
+  if(cont.length){
+    h+=`<div style="font-size:10px;font-weight:500;color:#55555f;padding:11px 0 5px;text-transform:uppercase;letter-spacing:.07em;border-top:0.5px solid #2a2a35;margin-top:6px">Actividades continuas</div>`;
+    cont.forEach(t=>{h+=`<div class="tl-row"><div class="tl-bar" style="background:#2a2a35"></div><div style="flex:1;min-width:0"><div style="font-size:13px;color:#f0f0f4">${t.name}</div><div style="font-size:11px;color:#55555f;margin-top:1px">${cLbl(t.proj)} · ${iLbl(t.impact)}</div></div><div style="font-size:11px;color:#55555f">Continua</div></div>`});
+  }
+  h+='</div>';
+  document.getElementById('tl-content').innerHTML=h;
+}
+
+function rAll(){rTasks();rDash();rSem();rTl()}
+function sw(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));el.classList.add('active');document.getElementById('v'+id[0]+(id==='timeline'?'tl':id==='semaforo'?'s':id==='dashboard'?'d':'')).classList.add('active')}
+
+rAll();
+</script>
